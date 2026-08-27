@@ -1,4 +1,4 @@
-import { connectDb, Application } from '@/lib/db'
+import { backendFetch } from '@/lib/api'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -33,15 +33,8 @@ export default async function ApplicationsPage() {
     redirect(role === 'officer' ? '/officer' : '/admin')
   }
 
-  let applications: any[] = []
-  try {
-    await connectDb()
-    applications = await Application.find({ user_id: userId })
-      .sort({ created_at: -1 })
-      .lean() as any[]
-  } catch {
-    // DB unavailable — show empty state
-  }
+  const result = await backendFetch<{ applications: any[] }>('/api/applications/my')
+  const applications: any[] = result?.applications ?? []
 
   return (
     <div className="py-6 max-w-2xl mx-auto">

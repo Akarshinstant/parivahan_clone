@@ -15,7 +15,7 @@ const nextConfig = {
    * Separated mode (set API_URL):         api-server.ts runs independently
    */
   async rewrites() {
-    const apiUrl = process.env.API_URL
+    const apiUrl = process.env.BACKEND_URL || process.env.API_URL
     if (!apiUrl) return []   // combined mode — Express in server.ts handles these routes
 
     return [

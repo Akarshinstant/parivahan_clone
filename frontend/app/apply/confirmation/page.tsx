@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { connectDb, Application, User } from '@/lib/db'
 
 export default async function ConfirmationPage({
   searchParams,
@@ -7,11 +6,6 @@ export default async function ConfirmationPage({
   searchParams: { appId?: string }
 }) {
   const appId = searchParams.appId || 'app-015'
-
-  await connectDb()
-  const app = await Application.findOne({ _id: appId }).lean() as any
-  const user = app ? await User.findOne({ _id: app.user_id }).lean() as any : null
-
   const receiptId = `RTO-KA-${new Date().getFullYear()}-${appId.slice(-3).toUpperCase()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
 
   return (

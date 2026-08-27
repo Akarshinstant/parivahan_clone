@@ -1,8 +1,8 @@
-import { connectDb, Application } from '@/lib/db'
+import { backendFetch } from '@/lib/api'
 
 export async function QueueIndicator() {
-  await connectDb()
-  const pending = await Application.countDocuments({ status: 'submitted' })
+  const result = await backendFetch<{ pending: number }>('/api/queue-count')
+  const pending = result?.pending ?? 0
 
   const estHours = Math.max(1, Math.round(pending * 0.3))
   const urgency = pending > 15 ? 'high' : pending > 8 ? 'medium' : 'low'

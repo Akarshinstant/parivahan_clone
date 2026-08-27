@@ -1,4 +1,4 @@
-import { connectDb, Application, Officer } from '@/lib/db'
+import { backendFetch } from '@/lib/api'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { OfficerClaimButton } from '@/components/OfficerClaimButton'
@@ -26,21 +26,11 @@ export default async function OfficerQueuePage() {
     )
   }
 
-  await connectDb()
-  const officer = await Officer.findOne({ _id: officerId })
-
-  const queueApps = await Application.find({ status: 'submitted' }).sort({ created_at: 1 }).lean()
-  const myClaimsApps = await Application.find({ claimed_by: officerId, status: { $in: ['assigned', 'under_review'] } }).sort({ claimed_at: -1 }).lean()
-  const allClaimingCount = await Application.countDocuments({ status: { $in: ['assigned', 'under_review'] } })
-
-  // Populate applicant names
-  const { User } = await import('@/lib/db')
-  const userIds = Array.from(new Set([...queueApps.map(a => a.user_id), ...myClaimsApps.map(a => a.user_id)].filter(Boolean)))
-  const users = await User.find({ _id: { $in: userIds } }).lean()
-  const userMap = Object.fromEntries(users.map(u => [u._id, u]))
-
-  const queue = queueApps.map(a => ({ ...a, applicant_name: userMap[a.user_id as string]?.name || 'Unknown', dob: userMap[a.user_id as string]?.dob }))
-  const myClaims = myClaimsApps.map(a => ({ ...a, applicant_name: userMap[a.user_id as string]?.name || 'Unknown' }))
+  const data = await backendFetch<any>('/api/officer/queue')
+  const officer = data?.officer
+  const queue: any[] = data?.queue ?? []
+  const myClaims: any[] = data?.myClaims ?? []
+  const allClaimingCount: number = data?.allClaimingCount ?? 0
 
   return (
     <div className="py-6 max-w-3xl mx-auto space-y-6">

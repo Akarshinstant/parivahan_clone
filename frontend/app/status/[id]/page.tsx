@@ -1,4 +1,4 @@
-import { connectDb, Application, AuditLog, User, TestSlot, TestTrack } from '@/lib/db'
+import { backendFetch } from '@/lib/api'
 import { REJECTION_MESSAGES } from '@/lib/types'
 import { StatusStepper } from '@/components/StatusStepper'
 import Link from 'next/link'
@@ -23,17 +23,10 @@ const ACTION_LABELS: Record<string, string> = {
 }
 
 export default async function StatusPage({ params }: { params: { id: string } }) {
-  await connectDb()
-  const app = await Application.findOne({ _id: params.id }).lean() as any
-  if (!app) notFound()
+  const data = await backendFetch<any>(`/api/applications/${params.id}/detail`)
+  if (!data?.application) notFound()
 
-  const [user, slot, audit] = await Promise.all([
-    User.findOne({ _id: app.user_id }).lean() as any,
-    app.test_slot_id ? TestSlot.findOne({ _id: app.test_slot_id }).lean() as any : null,
-    AuditLog.find({ application_id: params.id }).sort({ created_at: 1 }).lean(),
-  ])
-
-  const track = slot ? await TestTrack.findOne({ _id: slot.track_id }).lean() as any : null
+  const { application: app, user, slot, track, audit = [] } = data
   const formData = app.form_data || {}
   const rejMsg = app.rejection_code ? REJECTION_MESSAGES[app.rejection_code as keyof typeof REJECTION_MESSAGES] : null
 

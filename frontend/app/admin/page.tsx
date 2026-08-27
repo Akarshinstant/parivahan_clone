@@ -1,5 +1,5 @@
-import { connectDb, Application, Officer, AuditLog, FeedbackModel } from '@/lib/db'
 import { cookies } from 'next/headers'
+import { backendFetch } from '@/lib/api'
 import { FEEDBACK_TYPE_LABELS, SEVERITY_COLORS } from '@/lib/types'
 import type { FeedbackType, FeedbackSeverity } from '@/lib/types'
 
@@ -20,53 +20,9 @@ export default async function AdminPage() {
     )
   }
 
-  await connectDb()
-
-  const [total, submitted, processing, approved, rejected, issued] = await Promise.all([
-    Application.countDocuments(),
-    Application.countDocuments({ status: 'submitted' }),
-    Application.countDocuments({ status: { $in: ['assigned', 'under_review'] } }),
-    Application.countDocuments({ status: { $in: ['approved', 'test_scheduled', 'licence_issued'] } }),
-    Application.countDocuments({ status: 'rejected' }),
-    Application.countDocuments({ status: 'licence_issued' }),
-  ])
-
-  // Average processing time
-  const reviewedApps = await Application.find({ reviewed_at: { $ne: null } }, { created_at: 1, reviewed_at: 1 }).lean() as any[]
-  const avgHours = reviewedApps.length > 0
-    ? reviewedApps.reduce((sum: number, a: any) => sum + (new Date(a.reviewed_at).getTime() - new Date(a.created_at).getTime()) / 3600000, 0) / reviewedApps.length
-    : 0
-
-  // Officer workload
-  const officers = await Officer.find({}).lean() as any[]
-  const officerWorkload = await Promise.all(officers.map(async (o: any) => {
-    const reviewedByOfficer = await Application.find({ claimed_by: o._id, status: { $nin: ['submitted', 'assigned'] } }).lean() as any[]
-    const approvedCount = reviewedByOfficer.filter((a: any) => ['approved', 'test_scheduled', 'licence_issued'].includes(a.status)).length
-    const rejectedCount = reviewedByOfficer.filter((a: any) => a.status === 'rejected').length
-    return { ...o, total_reviewed: reviewedByOfficer.length, approved: approvedCount, rejected: rejectedCount }
-  }))
-  officerWorkload.sort((a: any, b: any) => b.total_reviewed - a.total_reviewed)
-
-  // Top rejection reasons
-  const rejApps = await Application.find({ rejection_code: { $ne: null } }, { rejection_code: 1 }).lean() as any[]
-  const rejCount: Record<string, number> = {}
-  rejApps.forEach((a: any) => { rejCount[a.rejection_code] = (rejCount[a.rejection_code] || 0) + 1 })
-  const rejectionReasons = Object.entries(rejCount).sort((a, b) => b[1] - a[1]).map(([code, count]) => ({ rejection_code: code, count }))
-
-  // Recent audit log
-  const auditLog = await AuditLog.find({}).sort({ created_at: -1 }).limit(20).lean() as any[]
-
-  // Stuck applications
-  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 3600 * 1000)
-  const stuckApps = await Application.find({ status: 'submitted', created_at: { $lt: threeDaysAgo } }).sort({ created_at: 1 }).lean() as any[]
-  const { User } = await import('@/lib/db')
-  const stuckUserIds = stuckApps.map((a: any) => a.user_id).filter(Boolean)
-  const stuckUsers = await User.find({ _id: { $in: stuckUserIds } }, { _id: 1, name: 1 }).lean() as any[]
-  const stuckUserMap = Object.fromEntries(stuckUsers.map((u: any) => [u._id, u.name]))
-  const stuck = stuckApps.map((a: any) => ({ ...a, name: stuckUserMap[a.user_id as string] || 'Unknown' }))
-
-  // Feedback submissions
-  const feedbackItems = await FeedbackModel.find({}).sort({ created_at: -1 }).limit(30).lean() as any[]
+  const data = await backendFetch<any>('/api/admin/dashboard')
+  const { kpi = {}, avgHours = 0, officerWorkload = [], rejectionReasons = [], auditLog = [], stuck = [], feedbackItems = [] } = data || {}
+  const { total = 0, submitted = 0, processing = 0, approved = 0, rejected = 0, issued = 0 } = kpi
 
   const serviceHealth = [
     { metric: 'Portal uptime (30d)', value: '99.7%', status: 'good' },
@@ -186,7 +142,6 @@ export default async function AdminPage() {
         </section>
       )}
 
-      {/* ── Feedback ──────────────────────────────────────────────────────── */}
       <section aria-labelledby="feedback-heading">
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -197,97 +152,51 @@ export default async function AdminPage() {
             {feedbackItems.filter((f: any) => f.status === 'open').length} Open
           </span>
         </div>
-
         {feedbackItems.length === 0 ? (
-          <div className="card text-center py-10 text-gray-400 text-sm">
-            No feedback submitted yet. The floating "Feedback" button on every page lets citizens report issues.
-          </div>
+          <div className="card text-center py-10 text-gray-400 text-sm">No feedback submitted yet.</div>
         ) : (
           <div className="space-y-4">
             {feedbackItems.map((item: any) => {
               const analysis = item.ai_analysis
-              const severityClass = analysis?.severity
-                ? SEVERITY_COLORS[analysis.severity as FeedbackSeverity]
-                : 'text-gray-600 bg-gray-50 border-gray-200'
+              const severityClass = analysis?.severity ? SEVERITY_COLORS[analysis.severity as FeedbackSeverity] : 'text-gray-600 bg-gray-50 border-gray-200'
               return (
                 <div key={item._id} className="card border border-gray-200 space-y-3">
-                  {/* Top row */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-gray-900 text-sm">{item.title}</span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${
-                          item.status === 'open'        ? 'bg-red-50 text-red-700 border-red-200' :
-                          item.status === 'in_progress' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                          'bg-green-50 text-green-700 border-green-200'
-                        }`}>
+                        <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${item.status === 'open' ? 'bg-red-50 text-red-700 border-red-200' : item.status === 'in_progress' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
                           {item.status === 'open' ? '🔴 Open' : item.status === 'in_progress' ? '🟡 In Progress' : '🟢 Resolved'}
                         </span>
-                        {analysis?.severity && (
-                          <span className={`text-xs px-1.5 py-0.5 rounded border font-medium capitalize ${severityClass}`}>
-                            {analysis.severity}
-                          </span>
-                        )}
+                        {analysis?.severity && <span className={`text-xs px-1.5 py-0.5 rounded border font-medium capitalize ${severityClass}`}>{analysis.severity}</span>}
                       </div>
                       <div className="text-xs text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
                         <span>{FEEDBACK_TYPE_LABELS[item.type as FeedbackType] || item.type}</span>
-                        <span>·</span>
-                        <span className="font-mono text-gray-400">{item.page_url || '/'}</span>
-                        <span>·</span>
-                        <span>{formatDate(item.created_at)}</span>
+                        <span>·</span><span className="font-mono text-gray-400">{item.page_url || '/'}</span>
+                        <span>·</span><span>{formatDate(item.created_at)}</span>
                       </div>
                     </div>
-                    {/* Jira ticket badge */}
                     <div className="flex-shrink-0 text-right">
-                      <div className="text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded-lg">
-                        {item.jira_ticket_id}
-                      </div>
+                      <div className="text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded-lg">{item.jira_ticket_id}</div>
                       <div className="text-xs text-gray-400 mt-0.5">Jira ticket</div>
                     </div>
                   </div>
-
-                  {/* User description */}
                   <p className="text-sm text-gray-700 leading-relaxed border-l-2 border-gray-200 pl-3">{item.description}</p>
-
-                  {/* AI Analysis */}
                   {analysis && (
                     <div className="bg-gray-50 rounded-xl p-3 space-y-2 border border-gray-100">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold text-gray-900">🤖 AI Root-Cause Analysis</span>
-                        {analysis.category && (
-                          <span className="text-xs text-gray-500 bg-white border border-gray-200 px-1.5 py-0.5 rounded">{analysis.category}</span>
-                        )}
+                        {analysis.category && <span className="text-xs text-gray-500 bg-white border border-gray-200 px-1.5 py-0.5 rounded">{analysis.category}</span>}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                        <div>
-                          <div className="text-gray-400 font-semibold uppercase tracking-wide text-[10px] mb-0.5">Root Cause</div>
-                          <div className="text-gray-700">{analysis.root_cause}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-400 font-semibold uppercase tracking-wide text-[10px] mb-0.5">Journey Impact</div>
-                          <div className="text-gray-700">{analysis.user_journey_impact}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-400 font-semibold uppercase tracking-wide text-[10px] mb-0.5">Suggested Fix</div>
-                          <div className="text-gray-700">{analysis.suggested_fix}</div>
-                        </div>
+                        <div><div className="text-gray-400 font-semibold uppercase tracking-wide text-[10px] mb-0.5">Root Cause</div><div className="text-gray-700">{analysis.root_cause}</div></div>
+                        <div><div className="text-gray-400 font-semibold uppercase tracking-wide text-[10px] mb-0.5">Journey Impact</div><div className="text-gray-700">{analysis.user_journey_impact}</div></div>
+                        <div><div className="text-gray-400 font-semibold uppercase tracking-wide text-[10px] mb-0.5">Suggested Fix</div><div className="text-gray-700">{analysis.suggested_fix}</div></div>
                       </div>
                     </div>
                   )}
-
-                  {!analysis && (
-                    <p className="text-xs text-gray-400 italic">AI analysis not available (OpenRouter key not set — offline mode)</p>
-                  )}
-
-                  {/* Dummy Jira link */}
                   <div className="flex items-center gap-3 pt-1 border-t border-gray-100">
-                    <a
-                      href={`#jira-${item.jira_ticket_id}`}
-                      className="text-xs text-blue-600 hover:underline font-medium"
-                      aria-label={`View dummy Jira ticket ${item.jira_ticket_id}`}
-                    >
-                      🔗 View {item.jira_ticket_id} in Jira (mock)
-                    </a>
+                    <a href={`#jira-${item.jira_ticket_id}`} className="text-xs text-blue-600 hover:underline font-medium">🔗 View {item.jira_ticket_id} in Jira (mock)</a>
                     <span className="text-gray-300">·</span>
                     <span className="text-xs text-gray-400">Reported by: {item.user_role || 'anonymous'}</span>
                   </div>
@@ -305,10 +214,8 @@ export default async function AdminPage() {
           <table className="w-full text-xs" aria-label="Audit log">
             <thead>
               <tr className="text-left text-gray-400 border-b border-gray-200">
-                <th className="pb-2 font-medium">Time</th>
-                <th className="pb-2 font-medium">Application</th>
-                <th className="pb-2 font-medium">Action</th>
-                <th className="pb-2 font-medium">Actor</th>
+                <th className="pb-2 font-medium">Time</th><th className="pb-2 font-medium">Application</th>
+                <th className="pb-2 font-medium">Action</th><th className="pb-2 font-medium">Actor</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">

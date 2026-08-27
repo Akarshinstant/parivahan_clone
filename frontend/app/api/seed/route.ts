@@ -1,27 +1,26 @@
 import { NextResponse } from 'next/server'
-import { connectDb, User, Officer, Application, AuditLog, TestSlot, TestTrack, FormDraft, AssistantSession } from '@/lib/db'
+
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000'
 
 export async function POST() {
   if (process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'Not allowed in production' }, { status: 403 })
   }
   try {
-    const { execSync } = await import('child_process')
-    execSync('npx tsx scripts/seed.ts', { stdio: 'inherit', cwd: process.cwd() })
-    return NextResponse.json({ success: true, message: 'Database seeded successfully' })
+    const res = await fetch(`${BACKEND_URL}/api/seed`, { method: 'POST', cache: 'no-store' })
+    const data = await res.json()
+    return NextResponse.json(data, { status: res.status })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
 
 export async function GET() {
-  await connectDb()
-  const [users, officers, applications, audit_log, test_slots] = await Promise.all([
-    User.countDocuments(),
-    Officer.countDocuments(),
-    Application.countDocuments(),
-    AuditLog.countDocuments(),
-    TestSlot.countDocuments(),
-  ])
-  return NextResponse.json({ counts: { users, officers, applications, audit_log, test_slots } })
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/seed`, { cache: 'no-store' })
+    const data = await res.json()
+    return NextResponse.json(data)
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
 }

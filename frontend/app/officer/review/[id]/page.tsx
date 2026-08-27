@@ -1,4 +1,4 @@
-import { connectDb, Application, Officer, User, TestSlot, TestTrack } from '@/lib/db'
+import { backendFetch } from '@/lib/api'
 import { cookies } from 'next/headers'
 import { REJECTION_MESSAGES } from '@/lib/types'
 import { notFound, redirect } from 'next/navigation'
@@ -7,42 +7,17 @@ import Link from 'next/link'
 
 export default async function ReviewPage({ params }: { params: { id: string } }) {
   const cookieStore = cookies()
-  const officerId = cookieStore.get('officerId')?.value || 'off-001'
   const role = cookieStore.get('role')?.value
 
   if (role !== 'officer') redirect('/officer')
 
-  await connectDb()
-  const app = await Application.findOne({ _id: params.id }).lean() as any
-  if (!app) notFound()
+  const data = await backendFetch<any>(`/api/officer/applications/${params.id}/review-data`)
+  if (!data?.application) notFound()
 
-  const [user, claimingOfficer, slot] = await Promise.all([
-    User.findOne({ _id: app.user_id }).lean() as any,
-    app.claimed_by ? Officer.findOne({ _id: app.claimed_by }).lean() as any : null,
-    app.test_slot_id ? TestSlot.findOne({ _id: app.test_slot_id }).lean() as any : null,
-  ])
-
-  const track = slot ? await TestTrack.findOne({ _id: slot.track_id }).lean() as any : null
+  const { application: app, user, claimingOfficer, slotsWithTrack = [] } = data
+  const officerId: string = data.currentOfficerId || 'off-001'
   const formData = app.form_data || {}
   const isMyApp = app.claimed_by === officerId
-
-  const availableSlots = await TestSlot.find({ application_id: null, slot_date: { $gte: new Date().toISOString().split('T')[0] } })
-    .sort({ slot_date: 1, slot_time: 1 })
-    .limit(20)
-    .lean() as any[]
-
-  const slotTrackIds = Array.from(new Set(availableSlots.map((s: any) => s.track_id)))
-  const slotTracks = await TestTrack.find({ _id: { $in: slotTrackIds } }).lean() as any[]
-  const trackMap = Object.fromEntries(slotTracks.map((t: any) => [t._id, t]))
-
-  const slotsWithTrack = availableSlots.map((s: any) => ({
-    id: s._id,
-    slot_date: s.slot_date,
-    slot_time: s.slot_time,
-    track_name: trackMap[s.track_id]?.name || '',
-    district: trackMap[s.track_id]?.district || '',
-    address: trackMap[s.track_id]?.address || '',
-  }))
 
   const CHECKLIST = [
     { id: 'photo', label: 'Photo meets requirements (white background, clear face, recent)' },
