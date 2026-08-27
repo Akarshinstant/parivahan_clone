@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sv http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/service/permanent-dl)",
+      "Bash(curl -s -c /tmp/test-cookies.txt -b /tmp/test-cookies.txt -X POST http://localhost:3000/auth/login -d 'username=anjali.sharma&password=demo123&redirect_to=/' -w '\\\\nHTTP %{http_code} → Location: %{redirect_url}' -o /dev/null)",
+      "Bash(curl -v -X POST http://localhost:3000/auth/login -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=anjali.sharma&password=demo123' -L -o /dev/null)",
+      "Bash(netstat -ano)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/auth/status)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} → %{redirect_url}\\\\n\" http://localhost:3000/auth/logout)",
+      "Bash(powershell -c \"Get-Process -Id 4000 | Select-Object ProcessName, CommandLine\")",
+      "Bash(powershell -c \"Stop-Process -Id 4000 -Force\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/auth/status)",
+      "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=anjali.sharma&password=demo123' -o /dev/null -w '%{http_code} → redirect: %{redirect_url}')",
+      "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=rajesh.kumar&password=officer123' -o /dev/null -w '%{http_code} → %{redirect_url}')",
+      "Bash(curl -s -X POST http://localhost:3000/auth/login -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=wrong&password=wrong' -o /dev/null -w '%{http_code} → %{redirect_url}')",
+      "Bash(npx tsx *)",
+      "Bash(kill %1)",
+      "Bash(findstr \":3000\")",
+      "Bash(curl -s --max-time 10 -X POST http://localhost:3000/api/applications/submit -H 'Content-Type: application/json' -d '{\"form_data\":{\"name\":\"Test\",\"dob\":\"1998-06-15\",\"phone\":\"9876543210\",\"vehicle_class\":\"LMV\",\"address\":\"123 Test St\",\"pincode\":\"560001\"}}' -o /tmp/submit-body.txt -w 'HTTP_STATUS=%{http_code}')",
+      "Bash(echo \"Started, PID=$!\")",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(curl -s --max-time 5 http://[::1]:3000/auth/status)",
+      "Bash(curl -s --max-time 5 -g http://localhost:3000/auth/status)",
+      "Bash(powershell -Command \"Get-Process -Name 'mongod' -ErrorAction SilentlyContinue | Select-Object Name, Id\")",
+      "Bash(curl -s --max-time 3 http://localhost:27017/)",
+      "Bash(curl --max-time 10 -X POST http://localhost:3000/api/applications/submit -H 'Content-Type: application/json' -d '{\"form_data\":{\"name\":\"Test\",\"dob\":\"1998-06-15\",\"phone\":\"9876543210\",\"vehicle_class\":\"LMV\",\"address\":\"123\",\"pincode\":\"560001\"}}')",
+      "Bash(curl -s --max-time 10 -X POST http://localhost:3000/api/applications/submit -H 'Content-Type: application/json' -d '{\"form_data\":{\"name\":\"Test Citizen\",\"dob\":\"1998-06-15\",\"phone\":\"9876543210\",\"vehicle_class\":\"LMV\",\"address\":\"123 Test St Bengaluru\",\"pincode\":\"560001\",\"digilocker_verified\":false,\"digilocker_id\":\"\"}}')",
+      "Bash(curl -s --max-time 10 -X POST http://localhost:3000/api/applications/submit -H 'Content-Type: application/json' -d '{\"form_data\":{\"name\":\"Second Citizen\",\"dob\":\"1995-03-20\",\"phone\":\"9845012345\",\"vehicle_class\":\"MCWG\",\"address\":\"456 Second St Mysuru\",\"pincode\":\"570001\",\"digilocker_verified\":false,\"digilocker_id\":\"\"}}')",
+      "Bash(powershell -Command \"Get-Process node | Stop-Process -Force\")",
+      "Bash(mongosh parivahan-rto *)",
+      "Bash(curl -s --max-time 15 -X POST https://openrouter.ai/api/v1/chat/completions -H 'Authorization: Bearer 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' -H 'Content-Type: application/json' -H 'HTTP-Referer: https://rto-demo.local' -d '{\"model\":\"stealth/ox-alpha\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}')",
+      "Bash(curl -s --max-time 5 https://api.openrouter.ai/)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(curl -s --max-time 10 -X POST https://openrouter.ai/api/v1/chat/completions -H 'Authorization: Bearer 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' -H 'Content-Type: application/json' -d '{\"model\":\"openai/gpt-3.5-turbo\",\"messages\":[{\"role\":\"user\",\"content\":\"Say OK\"}]}' -w '\\\\nHTTP_STATUS=%{http_code}')",
+      "Bash(curl -s --max-time 10 -X POST https://openrouter.ai/api/v1/chat/completions -H 'Authorization: Bearer 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' -H 'Content-Type: application/json' -d '{\"model\":\"stealth/ox-alpha\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}' -w '\\\\nHTTP_STATUS=%{http_code}')"
+    ]
+  }
+}

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parivahan Sewa (Demo Clone) — Ministry of Road Transport &amp; Highways</title>
+<style>
+  :root{
+    --navy:#0b3d63;
+    --navy-dark:#082a45;
+    --saffron:#ff9933;
+    --green:#138808;
+    --paper:#f6f8fa;
+    --card:#ffffff;
+    --ink:#152534;
+    --ink-soft:#5b6b7a;
+    --line:#e3e8ec;
+    --accent:#0f7a9c;
+    --radius:10px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI","Noto Sans",Arial,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+  }
+  a{color:inherit;text-decoration:none;}
+  img,svg{display:block;}
+  .tricolor{height:4px;width:100%;background:linear-gradient(90deg,var(--saffron) 0 33.33%,#ffffff 33.33% 66.66%,var(--green) 66.66% 100%);}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    background:var(--navy-dark);
+    color:#cfe0ec;
+    font-size:.78rem;
+  }
+  .topbar-inner{
+    max-width:1200px;margin:0 auto;padding:6px 20px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;
+  }
+  .topbar-inner a{opacity:.9;margin-right:14px;}
+  .topbar-inner a:hover{opacity:1;text-decoration:underline;}
+  .lang-select{
+    background:transparent;color:#cfe0ec;border:1px solid #2a5578;border-radius:4px;
+    font-size:.75rem;padding:3px 6px;
+  }
+
+  /* ---------- header ---------- */
+  header.main{
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1200px;margin:0 auto;padding:14px 20px;
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:12px;flex:1;min-width:260px;}
+  .emblem{
+    width:46px;height:46px;border-radius:50%;
+    background:conic-gradient(from 90deg,var(--saffron),#fff,var(--green));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 2px #fff, 0 0 0 1px var(--line);
+    flex-shrink:0;
+  }
+  .emblem span{font-size:.85rem;font-weight:700;color:var(--navy);}
+  .brand-text .title{font-size:1.15rem;font-weight:700;color:var(--navy);}
+  .brand-text .subtitle{font-size:.75rem;color:var(--ink-soft);}
+  .header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:9px 16px;border-radius:6px;font-size:.85rem;font-weight:600;
+    border:1px solid transparent;cursor:pointer;
+  }
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-dark);}
+  .btn-outline{background:#fff;color:var(--navy);border-color:var(--navy);}
+  .btn-outline:hover{background:#eef4f8;}
+
+  /* ---------- nav ---------- */
+  nav.mainnav{
+    background:var(--navy);
+  }
+  .nav-inner{
+    max-width:1200px;margin:0 auto;padding:0 20px;
+    display:flex;gap:4px;flex-wrap:wrap;
+  }
+  .nav-inner a{
+    padding:12px 16px;font-size:.85rem;font-weight:600;color:#e7eef4;
+    display:inline-block;border-bottom:3px solid transparent;
+  }
+  .nav-inner a:hover, .nav-inner a.active{
+    background:rgba(255,255,255,.08);
+    border-bottom-color:var(--saffron);
+  }
+
+  /* ---------- notice ticker ---------- */
+  .ticker-wrap{
+    background:#fff5e6;border-bottom:1px solid #ffe1b3;
+    display:flex;align-items:center;gap:10px;overflow:hidden;
+    padding:8px 20px;
+  }
+  .ticker-label{
+    background:var(--saffron);color:#fff;font-size:.72rem;font-weight:700;
+    padding:3px 10px;border-radius:4px;white-space:nowrap;flex-shrink:0;
+  }
+  .ticker-track{
+    display:flex;gap:60px;white-space:nowrap;
+    animation:scroll-left 28s linear infinite;
+    font-size:.83rem;color:#7a4b12;
+  }
+  @keyframes scroll-left{
+    0%{transform:translateX(0);}
+    100%{transform:translateX(-50%);}
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    max-width:1200px;margin:0 auto;padding:28px 20px 10px;
+    display:grid;grid-template-columns:1.3fr 1fr;gap:24px;
+  }
+  @media(max-width:900px){.hero{grid-template-columns:1fr;}}
+  .hero-card{
+    background:linear-gradient(135deg,var(--navy) 0%,#124a72 60%,var(--accent) 100%);
+    color:#fff;border-radius:var(--radius);padding:34px;
+    position:relative;overflow:hidden;
+  }
+  .hero-card::after{
+    content:"";position:absolute;right:-40px;bottom:-60px;width:220px;height:220px;
+    border-radius:50%;background:rgba(255,153,51,.18);
+  }
+  .hero-card h1{font-size:1.7rem;margin:0 0 10px;font-weight:700;}
+  .hero-card p{margin:0 0 20px;color:#d9e6ef;font-size:.95rem;max-width:480px;}
+  .hero-actions{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1;}
+  .hero-actions .btn-primary{background:var(--saffron);color:#3a2100;}
+  .hero-actions .btn-primary:hover{background:#ffb066;}
+  .hero-actions .btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.4);}
+
+  .stat-panel{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;display:flex;flex-direction:column;justify-content:center;gap:14px;
+  }
+  .stat-row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed var(--line);padding-bottom:12px;}
+  .stat-row:last-child{border-bottom:none;padding-bottom:0;}
+  .stat-num{font-size:1.3rem;font-weight:700;color:var(--navy);}
+  .stat-lbl{font-size:.78rem;color:var(--ink-soft);}
+
+  /* ---------- section titles ---------- */
+  .section{max-width:1200px;margin:0 auto;padding:36px 20px;}
+  .section-title{
+    display:flex;align-items:center;gap:10px;margin-bottom:18px;
+  }
+  .section-title .bar{width:5px;height:22px;background:var(--saffron);border-radius:2px;}
+  .section-title h2{font-size:1.15rem;margin:0;color:var(--navy);}
+
+  /* ---------- service grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.grid{grid-template-columns:1fr;}}
+  .service-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;cursor:pointer;transition:.15s;
+  }
+  .service-card:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(11,61,99,.08);transform:translateY(-2px);}
+  .service-icon{
+    width:40px;height:40px;border-radius:8px;background:#eaf3f8;color:var(--navy);
+    display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:1.2rem;
+  }
+  .service-card h3{font-size:.92rem;margin:0 0 6px;}
+  .service-card p{font-size:.78rem;color:var(--ink-soft);margin:0;}
+
+  /* ---------- lookup tool ---------- */
+  .tool-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab-btn{
+    padding:9px 16px;border-radius:6px;border:1px solid var(--line);background:#fff;
+    font-size:.82rem;font-weight:600;color:var(--ink-soft);cursor:pointer;
+  }
+  .tab-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .tool-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;
+  }
+  .tool-panel{display:none;}
+  .tool-panel.active{display:block;}
+  .form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px;}
+  .field label{font-size:.78rem;font-weight:600;color:var(--ink-soft);}
+  .field input, .field select{
+    padding:10px 12px;border-radius:6px;border:1px solid var(--line);font-size:.88rem;
+    background:#fbfcfd;
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .result-box{
+    margin-top:20px;padding:18px;border-radius:8px;background:#f2f8fb;border:1px solid #d7e9f1;
+    display:none;
+  }
+  .result-box.show{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+  .result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 24px;margin-top:12px;}
+  @media(max-width:600px){.result-grid{grid-template-columns:1fr;}}
+  .result-grid div{font-size:.85rem;}
+  .result-grid b{display:block;color:var(--ink-soft);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;}
+  .badge.ok{background:#e3f6e6;color:var(--green);}
+  .badge.warn{background:#fff1e0;color:#b56a00;}
+  .badge.due{background:#fde9e9;color:#b3261e;}
+
+  /* ---------- quicklinks/portals ---------- */
+  .portal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media(max-width:800px){.portal-grid{grid-template-columns:1fr;}}
+  .portal-card{
+    border-radius:var(--radius);padding:22px;color:#fff;position:relative;overflow:hidden;
+  }
+  .portal-card h3{margin:6px 0 6px;font-size:1.05rem;}
+  .portal-card p{font-size:.8rem;opacity:.9;margin:0 0 14px;}
+  .portal-card .pill{
+    display:inline-block;background:rgba(255,255,255,.18);padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;
+  }
+  .portal-card a.go{
+    display:inline-block;margin-top:14px;font-size:.8rem;font-weight:700;color:#fff;
+    border-bottom:2px solid rgba(255,255,255,.6);
+  }
+  .p-sarathi{background:linear-gradient(135deg,#0b3d63,#155f8f);}
+  .p-vahan{background:linear-gradient(135deg,#0f6b3a,#159c56);}
+  .p-echallan{background:linear-gradient(135deg,#9c3412,#c9531f);}
+
+  /* ---------- news / downloads ---------- */
+  .two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;}
+  @media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+  .list-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:8px 0;}
+  .list-item{
+    display:flex;justify-content:space-between;gap:10px;padding:12px 20px;border-bottom:1px solid var(--line);font-size:.85rem;
+  }
+  .list-item:last-child{border-bottom:none;}
+  .list-item .date{color:var(--ink-soft);font-size:.75rem;white-space:nowrap;}
+  .download-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.85rem;
+  }
+  .download-card .tag{font-size:.7rem;background:#eaf3f8;color:var(--navy);padding:3px 8px;border-radius:4px;font-weight:700;}
+
+  /* ---------- footer ---------- */
+  footer{background:var(--navy-dark);color:#c7d7e2;margin-top:40px;}
+  .footer-inner{
+    max-width:1200px;margin:0 auto;padding:36px 20px 18px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:26px;
+  }
+  @media(max-width:800px){.footer-inner{grid-template-columns:repeat(2,1fr);}}
+  .footer-inner h4{color:#fff;font-size:.85rem;margin:0 0 12px;}
+  .footer-inner ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .footer-inner a{font-size:.8rem;color:#c7d7e2;}
+  .footer-inner a:hover{color:#fff;text-decoration:underline;}
+  .footer-bottom{
+    border-top:1px solid #1c4a6b;padding:14px 20px;text-align:center;font-size:.75rem;color:#93a9b8;
+  }
+
+  .skip-link{position:absolute;left:-999px;top:auto;}
+  .skip-link:focus{left:12px;top:12px;background:#fff;color:var(--navy);padding:8px 12px;border-radius:6px;z-index:999;}
+
+  .disclaimer{
+    background:#fde9e9;border:1px solid #f5b8b8;color:#7a1414;font-size:.78rem;
+    text-align:center;padding:8px 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="disclaimer">⚠ Demo / prototype clone for design purposes only — not affiliated with the Government of India. All data shown is mocked.</div>
+<div class="tricolor"></div>
+
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>
+      <a href="#">Skip to Main Content</a>
+      <a href="#">Screen Reader Access</a>
+      <a href="#">Sitemap</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <select class="lang-select" aria-label="Choose language">
+        <option>English</option>
+        <option>हिन्दी</option>
+        <option>தமிழ்</option>
+        <option>বাংলা</option>
+      </select>
+      <a href="#">Contact Us</a>
+      <a href="#">Help</a>
+    </div>
+  </div>
+</div>
+
+<header class="main">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="emblem"><span>GOI</span></div>
+      <div class="brand-text">
+        <div class="title">Parivahan Sewa</div>
+        <div class="subtitle">Ministry of Road Transport &amp; Highways · Government of India (Demo)</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="scrollToId('signin')">Sign In</button>
+      <button class="btn btn-primary" onclick="scrollToId('register')">Register</button>
+    </div>
+  </div>
+</header>
+
+<nav class="mainnav">
+  <div class="nav-inner">
+    <a href="#" class="active">Home</a>
+    <a href="#online-services">Online Services</a>
+    <a href="#informational">Informational Services</a>
+    <a href="#downloads">Forms &amp; Downloads</a>
+    <a href="#rti">RTI</a>
+    <a href="#feedback">Feedback</a>
+    <a href="#contact">Contact Us</a>
+  </div>
+</nav>
+
+<div class="ticker-wrap">
+  <span class="ticker-label">Notices</span>
+  <div class="ticker-track">
+    <span>📢 Aadhaar-based authentication mandatory for new DL applications from 1 Sep 2026 (mock notice)</span>
+    <span>📢 Vahan 4.0 scheduled maintenance: 24 Aug, 02:00–05:00 IST (mock notice)</span>
+    <span>📢 Fancy number e-auction for KA / MH / DL series opens next week (mock notice)</span>
+    <span>📢 Aadhaar-based authentication mandatory for new DL applications from 1 Sep 2026 (mock notice)</span>
+    <span>📢 Vahan 4.0 scheduled maintenance: 24 Aug, 02:00–05:00 IST (mock notice)</span>
+    <span>📢 Fancy number e-auction for KA / MH / DL series opens next week (mock notice)</span>
+  </div>
+</div>
+
+<main id="main">
+
+  <div class="hero">
+    <div class="hero-card">
+      <h1>All your Driving Licence, RC &amp; Challan services — in one place</h1>
+      <p>Sarathi handles driving licences, VAHAN handles vehicle registration, and eChallan handles traffic fines — search, apply and track them all from a single portal.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="scrollToId('lookup')">Check RC / DL Status</button>
+        <button class="btn btn-ghost" onclick="scrollToId('online-services')">Explore Services</button>
+      </div>
+    </div>
+    <div class="stat-panel" aria-label="Portal statistics (mocked)">
+      <div class="stat-row"><span class="stat-lbl">Registered vehicles (mock)</span><span class="stat-num">32.8 Cr</span></div>
+      <div class="stat-row"><span class="stat-lbl">Driving licences issued (mock)</span><span class="stat-num">18.4 Cr</span></div>
+      <div class="stat-row"><span class="stat-lbl">Connected RTOs (mock)</span><span class="stat-num">1,347</span></div>
+      <div class="stat-row"><span class="stat-lbl">e-Challans settled today (mock)</span><span class="stat-num">1,92,004</span></div>
+    </div>
+  </div>
+
+  <!-- ONLINE SERVICES -->
+  <section class="section" id="online-services">
+    <div class="section-title"><div class="bar"></div><h2>Online Services</h2></div>
+    <div class="grid">
+      <div class="service-card"><div class="service-icon">🪪</div><h3>Driving Licence Related</h3><p>Apply, renew, download duplicate DL, add class of vehicle.</p></div>
+      <div class="service-card"><div class="service-icon">🚗</div><h3>Vehicle Related</h3><p>New RC, ownership transfer, address change, hypothecation.</p></div>
+      <div class="service-card"><div class="service-icon">💳</div><h3>eChallan / Fines</h3><p>Check pending challans and pay traffic fines online.</p></div>
+      <div class="service-card"><div class="service-icon">📋</div><h3>Permit Services</h3><p>National &amp; state permits for commercial vehicles.</p></div>
+      <div class="service-card"><div class="service-icon">🔢</div><h3>Fancy Number Booking</h3><p>Reserve VIP registration numbers via e-auction.</p></div>
+      <div class="service-card"><div class="service-icon">🛠️</div><h3>Fitness Certificate</h3><p>Apply / renew fitness certificate for transport vehicles.</p></div>
+      <div class="service-card"><div class="service-icon">🏫</div><h3>Driving School Licence</h3><p>Apply for and renew accredited driving school licences.</p></div>
+      <div class="service-card"><div class="service-icon">♻️</div><h3>Vehicle Scrapping</h3><p>Register with an RVSF and generate Certificate of Deposit.</p></div>
+    </div>
+  </section>
+
+  <!-- LOOKUP TOOL -->
+  <section class="section" id="lookup">
+    <div class="section-title"><div class="bar"></div><h2>Quick Status Check</h2></div>
+    <div class="tool-tabs">
+      <button class="tab-btn active" data-tab="rc" onclick="switchTab('rc')">Vehicle / RC Status</button>
+      <button class="tab-btn" data-tab="dl" onclick="switchTab('dl')">Driving Licence Status</button>
+      <button class="tab-btn" data-tab="challan" onclick="switchTab('challan')">eChallan Status</button>
+    </div>
+
+    <div class="tool-card">
+      <!-- RC PANEL -->
+      <div class="tool-panel active" id="panel-rc">
+        <div class="form-row">
+          <div class="field">
+            <label for="rc-number">Vehicle Registration Number</label>
+            <input id="rc-number" placeholder="e.g. KA01AB1234" value="KA01AB1234">
+          </div>
+          <button class="btn btn-primary" onclick="lookupRC()">Search Vehicle</button>
+        </div>
+        <div class="result-box" id="rc-result">
+          <strong>Registration Details</strong>
+          <div class="result-grid">
+            <div><b>Owner Name</b>Rohan A. Sharma (mock)</div>
+            <div><b>Registration No.</b><span id="rc-out-num">KA01AB1234</span></div>
+            <div><b>Vehicle Class</b>Motor Car (LMV)</div>
+            <div><b>Maker / Model</b>Maruti Suzuki Swift VXi</div>
+            <div><b>Registration Date</b>14-Mar-2021</div>
+            <div><b>Fuel Type</b>Petrol</div>
+            <div><b>Insurance Valid Upto</b>13-Mar-2027 <span class="badge ok">Active</span></div>
+            <div><b>Fitness Valid Upto</b>13-Mar-2036 <span class="badge ok">Active</span></div>
+            <div><b>PUC Valid Upto</b>02-Jun-2026 <span class="badge warn">Expiring soon</span></div>
+            <div><b>Road Tax</b><span class="badge ok">Paid (LTT)</span></div>
+            <div><b>RTO</b>Koramangala RTO, Bengaluru (KA-01)</div>
+            <div><b>Hypothecation</b>HDFC Bank Ltd.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DL PANEL -->
+      <div class="tool-panel" id="panel-dl">
+        <div class="form-row">
+          <div class="field">
+            <label for="dl-number">Driving Licence Number</label>
+            <input id="dl-number" placeholder="e.g. KA0120210012345" value="KA0120210012345">
+          </div>
+          <div class="field">
+            <label for="dl-dob">Date of Birth</label>
+            <input id="dl-dob" type="date" value="1996-07-22">
+          </div>
+          <button class="btn btn-primary" onclick="lookupDL()">Check DL Status</button>
+        </div>
+        <div class="result-box" id="dl-result">
+          <strong>Licence Details</strong>
+          <div class="result-grid">
+            <div><b>Holder Name</b>Rohan A. Sharma (mock)</div>
+            <div><b>DL Number</b><span id="dl-out-num">KA0120210012345</span></div>
+            <div><b>Status</b><span class="badge ok">Active</span></div>
+            <div><b>Issuing Authority</b>RTO Koramangala, Bengaluru</div>
+            <div><b>Date of Issue</b>02-Jan-2021</div>
+            <div><b>Valid Upto</b>01-Jan-2041</div>
+            <div><b>Vehicle Classes</b>LMV, MCWG</div>
+            <div><b>Badge / Endorsement</b>None</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHALLAN PANEL -->
+      <div class="tool-panel" id="panel-challan">
+        <div class="form-row">
+          <div class="field">
+            <label for="ch-number">Challan / Vehicle / DL Number</label>
+            <input id="ch-number" placeholder="e.g. KA01AB1234" value="KA01AB1234">
+          </div>
+          <button class="btn btn-primary" onclick="lookupChallan()">Check Challans</button>
+        </div>
+        <div class="result-box" id="challan-result">
+          <strong>Pending &amp; Past Challans</strong>
+          <div class="list-card" style="margin-top:12px;">
+            <div class="list-item"><span>#CH2026070045 — Signal jump, MG Road<br><span class="date">Issued 12-Jul-2026 · ₹1,000</span></span><span class="badge due">Unpaid</span></div>
+            <div class="list-item"><span>#CH2026041178 — No helmet, Outer Ring Rd<br><span class="date">Issued 09-Apr-2026 · ₹500</span></span><span class="badge ok">Paid</span></div>
+            <div class="list-item"><span>#CH2025121890 — Overspeeding, NH-44<br><span class="date">Issued 21-Dec-2025 · ₹2,000</span></span><span class="badge ok">Paid</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTALS -->
+  <section class="section" id="informational">
+    <div class="section-title"><div class="bar"></div><h2>Connected Portals</h2></div>
+    <div class="portal-grid">
+      <div class="portal-card p-sarathi">
+        <span class="pill">Driving Licence</span>
+        <h3>Sarathi Parivahan</h3>
+        <p>Learner &amp; permanent licence applications, test slot booking, renewal and duplicate DL.</p>
+        <a class="go" href="#" onclick="return false;">Go to Sarathi →</a>
+      </div>
+      <div class="portal-card p-vahan">
+        <span class="pill">Vehicle Registration</span>
+        <h3>VAHAN 4.0</h3>
+        <p>RC registration, ownership transfer, road tax payment, fitness &amp; NOC services.</p>
+        <a class="go" href="#" onclick="return false;">Go to Vahan →</a>
+      </div>
+      <div class="portal-card p-echallan">
+        <span class="pill">Traffic Enforcement</span>
+        <h3>eChallan</h3>
+        <p>View and pay traffic violation fines issued across all connected states.</p>
+        <a class="go" href="#" onclick="return false;">Go to eChallan →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWS + DOWNLOADS -->
+  <section class="section" id="downloads">
+    <div class="two-col">
+      <div>
+        <div class="section-title"><div class="bar"></div><h2>Latest Updates</h2></div>
+        <div class="list-card">
+          <div class="list-item"><span>Revised fee structure for International Driving Permit notified</span><span class="date">20 Aug 2026</span></div>
+          <div class="list-item"><span>Vahan 4.0 integration extended to 3 new Union Territories</span><span class="date">15 Aug 2026</span></div>
+          <div class="list-item"><span>Public notice: beware of fraudulent third-party DL agents</span><span class="date">08 Aug 2026</span></div>
+          <div class="list-item"><span>New CMVR guidelines for EV registration published</span><span class="date">02 Aug 2026</span></div>
+          <div class="list-item"><span>Fancy number e-auction results for July 2026 released</span><span class="date">28 Jul 2026</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-title"><div class="bar"></div><h2>Forms &amp; Downloads</h2></div>
+        <div class="download-card"><span>Form 1 — Application for Driving Licence</span><span class="tag">PDF</span></div>
+        <div class="download-card"><span>Form 20 — Application for Vehicle Registration</span><span class="tag">PDF</span></div>
+        <div class="download-card"><span>Form 26 — Application for Duplicate RC</span><span class="tag">PDF</span></div>
+        <div class="download-card"><span>Form 28 — NOC for Vehicle Re-registration</span><span class="tag">PDF</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="signin">
+    <div class="section-title"><div class="bar"></div><h2>Sign In</h2></div>
+    <div class="tool-card" style="max-width:420px;">
+      <div class="field" style="margin-bottom:14px;">
+        <label for="login-id">Mobile Number / Username</label>
+        <input id="login-id" placeholder="10-digit mobile number">
+      </div>
+      <div class="field" style="margin-bottom:16px;">
+        <label for="login-otp">OTP</label>
+        <input id="login-otp" placeholder="Enter OTP">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="mockLogin()">Sign In (mock)</button>
+      <p style="font-size:.75rem;color:var(--ink-soft);margin-top:10px;" id="register">New user? <a href="#" style="color:var(--accent);text-decoration:underline;" onclick="return false;">Register here</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer id="contact">
+  <div class="footer-inner">
+    <div>
+      <h4>About</h4>
+      <ul>
+        <li><a href="#" onclick="return false;">About Parivahan Sewa</a></li>
+        <li><a href="#" onclick="return false;">Ministry of Road Transport &amp; Highways</a></li>
+        <li><a href="#" onclick="return false;">National Informatics Centre</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#online-services" onclick="return false;">Driving Licence</a></li>
+        <li><a href="#online-services" onclick="return false;">Vehicle Registration</a></li>
+        <li><a href="#lookup" onclick="return false;">eChallan</a></li>
+        <li><a href="#online-services" onclick="return false;">Permits</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="#downloads" onclick="return false;">Forms &amp; Downloads</a></li>
+        <li><a href="#" onclick="return false;">RTI</a></li>
+        <li><a href="#" onclick="return false;">Grievance Redressal</a></li>
+        <li><a href="#" onclick="return false;">Accessibility Statement</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li>Helpline: 1800-XXX-XXXX (mock)</li>
+        <li>support@parivahan.mock.gov.in</li>
+        <li>Mon–Sat, 9:30 AM – 6:00 PM IST</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">This is a non-functional demo clone built for UI/prototyping purposes. No real data, transactions or government systems are involved.</div>
+</footer>
+
+<script>
+  function scrollToId(id){
+    const el = document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function switchTab(tab){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    document.querySelectorAll('.tool-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+  }
+
+  function lookupRC(){
+    const val = document.getElementById('rc-number').value.trim().toUpperCase() || 'KA01AB1234';
+    document.getElementById('rc-out-num').textContent = val;
+    document.getElementById('rc-result').classList.add('show');
+  }
+  function lookupDL(){
+    const val = document.getElementById('dl-number').value.trim().toUpperCase() || 'KA0120210012345';
+    document.getElementById('dl-out-num').textContent = val;
+    document.getElementById('dl-result').classList.add('show');
+  }
+  function lookupChallan(){
+    document.getElementById('challan-result').classList.add('show');
+  }
+  function mockLogin(){
+    alert('This is a demo — no real authentication happens here.');
+  }
+</script>
+
+</body>
+</html>
